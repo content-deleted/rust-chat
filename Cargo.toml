@@ -3,12 +3,18 @@ name = "rust-chat"
 version = "0.1.0"
 authors = ["content-deleted <contentdeleted@gmail.com>"]
 
+
 [[bin]]
 name = "client"
 path = "src/clientMain.rs"
+
 
 [[bin]]
 name = "server"
 path = "src/serverMain.rs"
 
 [dependencies]
+gtk = "^0"
+relm = "^0.11.0"
+relm-derive = "^0.11.0"
+

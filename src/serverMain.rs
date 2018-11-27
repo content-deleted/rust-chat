@@ -5,7 +5,6 @@ use std::io::BufReader;
 use std::io::prelude::*;
 
 fn main() {
-    
     let socket = UdpSocket::bind("0.0.0.0:8888").expect("Err: Could not bind socekt");
     let users = load_accounts().expect("Could not load users");
 
@@ -13,8 +12,6 @@ fn main() {
         println!("Username: {}",user.username);
         println!("Password: {}",user.password);
     }
-
-    println!("test");
 
     loop {
         let mut buf = [0u8; 1500];
