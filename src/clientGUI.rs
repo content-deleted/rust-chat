@@ -1,72 +1,43 @@
+use azul::{prelude::*, widgets::{label::Label, button::Button, text_input::TextInput, text_input::TextInputState}};
 
-// gui information
-
-use relm::{Relm, Update, Widget};
-use gtk::prelude::*;
-use gtk::{Window, Inhibit, WindowType};
-
-pub struct Model {
-
+struct DataModel {
+    counter: usize,
+    text_input: TextInputState,
 }
 
-#[derive(Msg)]
-pub enum Msg {
-    // …
-    Quit,
-}
+impl Layout for DataModel {
+    // Model renders View
+    fn layout(&self, info: WindowInfo<Self>) -> Dom<Self> {
+        let label = Label::new(format!("{}", self.counter)).dom();
+        //let label = Label::new(format!("{}", self.text_input )).dom();
+        let button = Button::with_label("Send").dom()
+            .with_callback(On::MouseUp, Callback(update_counter));
 
-pub struct Win {
-    model: Model,
-    window: Window,
-}
+        let textinput = TextInput::new()
+        // ... bind it to self.text_input - will automatically update
+        .bind(info.window, &self.text_input, &self)
+        // ... and render it in the UI
+        .dom(&self.text_input)
+        .with_callback(azul::dom::On::VirtualKeyUp, Callback(send_msg));
 
-impl Update for Win {
-    // Specify the model used for this widget.
-    type Model = Model;
-    // Specify the model parameter used to init the model.
-    type ModelParam = ();
-    // Specify the type of the messages sent to the update function.
-    type Msg = Msg;
-
-    // Return the initial model.
-    fn model(_: &Relm<Self>, _: ()) -> Model {
-        Model {
-        }
-    }
-
-    // The model may be updated when a message is received.
-    // Widgets may also be updated in this function.
-    fn update(&mut self, event: Msg) {
-        match event {
-            Msg::Quit => gtk::main_quit(),
-        }
+        Dom::new(NodeType::Div)
+            .with_child(label)
+            .with_child(button)
+            .with_child(textinput)
     }
 }
 
-impl Widget for Win {
-    // Specify the type of the root widget.
-    type Root = Window;
+// View updates Model
+fn update_counter(app_state: &mut AppState<DataModel>, _event: WindowEvent<DataModel>) -> UpdateScreen {
+    app_state.data.modify(|state| state.counter += 1);
+    UpdateScreen::Redraw
+}
 
-    // Return the root widget.
-    fn root(&self) -> Self::Root {
-        self.window.clone()
-    }
+fn send_msg (app_state: &mut AppState<DataModel>, _event: WindowEvent<DataModel>) -> UpdateScreen {
+    UpdateScreen::Redraw
+}
 
-    // Create the widgets.
-    fn view(relm: &Relm<Self>, model: Self::Model) -> Self {
-        // GTK+ widgets are used normally within a `Widget`.
-        let window = Window::new(WindowType::Toplevel);
-
-        // Connect the signal `delete_event` to send the `Quit` message.
-        connect!(relm, window, connect_delete_event(_, _), return (Some(Msg::Quit), Inhibit(false)));
-        // There is also a `connect!()` macro for GTK+ events that do not need a
-        // value to be returned in the callback.
-
-        window.show_all();
-
-        Win {
-            model,
-            window: window,
-        }
-    }
+pub fn startGUI () {
+    let app = App::new(DataModel { counter: 0, text_input: TextInputState::new("") }, AppConfig::default());
+    app.run(Window::new(WindowCreateOptions::default(), Css::native()).unwrap()).unwrap();
 }

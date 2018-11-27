@@ -1,23 +1,19 @@
-extern crate gtk;
-#[macro_use]
-extern crate relm;
-#[macro_use]
-extern crate relm_derive;
+extern crate azul;
+use azul::{prelude::*, widgets::{label::Label, button::Button}};
 
 use std::net::UdpSocket;
 use std::{str,io};
 
 mod clientGUI;
-use relm::Widget;
 
 fn main() {
-    let socket = UdpSocket::bind("127.0.0.1:8000").expect("Err: Could not bind socekt");
-    
+    let socket = UdpSocket::bind("127.0.0.1:8000").expect("Err: Could not bind socket");
+
     socket.connect("127.0.0.1:8888")
           .expect("Could not connect to server");
 
-    clientGUI::Win::run(()).unwrap();
-
+    clientGUI::startGUI();
+    
     loop {
         let mut input = String::new();
         let mut buffer = [0u8; 1500];
