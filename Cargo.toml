@@ -13,4 +13,4 @@ path = "src/serverMain.rs"
 
 [dependencies]
 azul = { git = "https://github.com/maps4print/azul" }
-serde = "1.0.62"
+serde = "^1.0.62"

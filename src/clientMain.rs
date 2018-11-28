@@ -13,7 +13,7 @@ fn main() {
           .expect("Could not connect to server");
 
     clientGUI::startGUI();
-    
+    /*
     loop {
         let mut input = String::new();
         let mut buffer = [0u8; 1500];
@@ -28,5 +28,5 @@ fn main() {
               .expect("Could not read to buffer");
 
         print!("{}", str::from_utf8(&buffer).expect("Could not write buffer"));
-    }
+    } */
 }
