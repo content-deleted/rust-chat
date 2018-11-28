@@ -1,17 +1,26 @@
 use azul::{prelude::*, widgets::{label::Label, button::Button, text_input::TextInput, text_input::TextInputState}};
 use azul::*;
-struct DataModel {
-    counter: usize,
+use std::net::UdpSocket;
+
+pub struct DataModel {
+    socket: UdpSocket,
     text_input: TextInputState,
-    messages: Vec<String>
+    messages: Vec<String>,
+    currentUsers: Vec<User>,
 }
 
-impl Default for DataModel {
-    fn default() -> Self {
+struct User {
+    username: String,
+    password: String,
+}
+
+impl DataModel {
+    pub fn default(sok: UdpSocket) -> Self {
         Self {
+            socket: sok,
             text_input: TextInputState::new(""),
-            counter: 0,
-            messages: (0..20).map(|_num| String::new()).collect()
+            messages: (0..20).map(|_num| String::new()).collect(),
+            currentUsers: Vec::new()
         }
     }
 }
@@ -19,10 +28,8 @@ impl Default for DataModel {
 impl Layout for DataModel {
     // Model renders View
     fn layout(&self, info: WindowInfo<Self>) -> Dom<Self> {
-        //let label = Label::new(format!("{}", self.counter)).dom();
-        //let label = Label::new(format!("{}", self.text_input )).dom();
         let button = Button::with_label("Send").dom()
-            .with_callback(On::MouseUp, Callback(update_counter));
+            .with_callback(On::MouseUp, Callback(send_msg));
 
         let textinput = TextInput::new()
         // ... bind it to self.text_input - will automatically update
@@ -33,7 +40,7 @@ impl Layout for DataModel {
 
 
         // List of messages
-        let messages = self.messages.iter().enumerate().map(|(idx, item)| {
+        let messages = self.messages.iter().enumerate().map(|(_idx, item)| {
             NodeData {
                 node_type: NodeType::Label(item.to_string()),
                 .. Default::default()
@@ -58,10 +65,8 @@ impl Layout for DataModel {
     }
 }
 
-// View updates Model
-fn update_counter(app_state: &mut AppState<DataModel>, _event: WindowEvent<DataModel>) -> UpdateScreen {
-    app_state.data.modify(|state| {
-        state.counter += 1;
+fn send_msg (app_state: &mut AppState<DataModel>, _event: WindowEvent<DataModel>) -> UpdateScreen {
+     app_state.data.modify(|state| {
         state.messages.push(state.text_input.text.clone());
         state.messages.remove(0);
         state.text_input.text = String::from("");
@@ -70,15 +75,10 @@ fn update_counter(app_state: &mut AppState<DataModel>, _event: WindowEvent<DataM
     UpdateScreen::Redraw
 }
 
-fn send_msg (app_state: &mut AppState<DataModel>, _event: WindowEvent<DataModel>) -> UpdateScreen {
-    UpdateScreen::Redraw
-}
-
-pub fn startGUI () {
-    let app = App::new(DataModel::default(), AppConfig::default());
-    let mut options = WindowCreateOptions::default();
-    options.state.title = String::from("test");
-    app.run(Window::new(options, Css::native()).unwrap()).unwrap();
+fn receiver_daemon(state: &mut DataModel, _app_resources: &mut AppResources) -> (UpdateScreen, TerminateDaemon) {
+    let mut buffer = [0u8; 1500];
+    //socket.recv_from(&mut buffer).expect("Could not read to buffer");
+    (UpdateScreen::Redraw, TerminateDaemon::Continue)
 }
 
 

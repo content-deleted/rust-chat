@@ -9,10 +9,13 @@ mod clientGUI;
 fn main() {
     let socket = UdpSocket::bind("127.0.0.1:8000").expect("Err: Could not bind socket");
 
-    socket.connect("127.0.0.1:8888")
-          .expect("Could not connect to server");
+    socket.connect("127.0.0.1:8888").expect("Could not connect to server");
 
-    clientGUI::startGUI();
+    let app = App::new(clientGUI::DataModel::default(socket), AppConfig::default());
+    let mut options = WindowCreateOptions::default();
+    options.state.title = String::from("");
+    app.run(Window::new(options, Css::native()).unwrap()).unwrap();
+    
     /*
     loop {
         let mut input = String::new();
