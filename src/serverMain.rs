@@ -25,6 +25,7 @@ fn main() {
                 thread::spawn(move || {
                     //println!("Handling connection from {}", src );
                     let mut sendBack = String::new();
+                    println!("Received {}", str::from_utf8(&buf).unwrap());
                     match str::from_utf8(&buf).unwrap() {
                         "clientLogin" => {
                             sendBack = String::from("ClientLogin");

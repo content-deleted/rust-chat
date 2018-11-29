@@ -102,7 +102,7 @@ impl Layout for DataModel {
             .dom(&self.text_input);
 
             let loginButton = Button::with_label("Login").dom()
-                .with_callback(On::MouseUp, Callback(send_msg));
+                .with_callback(On::MouseUp, Callback(attemptLogin));
             
             Dom::new(NodeType::Div)
                 .with_child(Dom::new(NodeType::Div))
@@ -134,25 +134,40 @@ fn attemptLogin(app_state: &mut AppState<DataModel>, _event: WindowEvent<DataMod
 }
 
 fn asyncLogin(app_data: Arc<Mutex<DataModel>>, _: Arc<()>) {
-    // send login request
+    
     let mut buffer = [0u8; 1500];
 
     app_data.modify(|state| {
-        // get the text from our input box
+        // start with the message type, in this case the login
         let mut message = sharedStructs::messageStr(sharedStructs::MessageType::ClientLogin);
         message += " ";
+        // get the text from our input box
         message += state.text_input.text.clone().as_str();
 
+        // clear login field
+        state.text_input.text = String::new();
+
+        // send it to the server 
         state.socket.send( message.as_bytes())
             .expect("Failed to send to server");
-
+        // with for a response 
         state.socket.recv_from(&mut buffer)
             .expect("Could not read to buffer");
     });
 
-    
-    let result = true;
+    // parse out message type and payload
+    let temp = str::from_utf8(&buffer).unwrap().to_string();
+    let (messageType, payload) = temp.split_at(temp.find(" ").unwrap_or(0));
+
+    // decide what to do with the thing that comes back
+    let result = match messageType {
+        "LoginSuccess" => true,
+        "LoginFailure" => false,
+        _ => false
+    };
+
     app_data.modify(|state| state.loggedIn =  result);
+    println!("result {}", result);
 }
 
 fn receiver_daemon(state: &mut DataModel, _app_resources: &mut AppResources) -> (UpdateScreen, TerminateDaemon) {
