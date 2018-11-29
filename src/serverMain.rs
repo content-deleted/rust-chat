@@ -32,13 +32,15 @@ fn main() {
                     let (messageType, payload) = temp.split_at(temp.find(" ").unwrap_or(0));
                     // match on message type so we know what to do
                     match messageType {
-                        "clientLogin" => {
+                        "ClientLogin" => {
                             // this is where validation happens
                             //let (username, password) = payload.split_at(payload.find(" ").unwrap_or(0));
                             let mut correctPwd = false;
                             let users = load_accounts().expect("Could not load users");
                             for user in users {
-                                if ( user == payload) {
+                                println!("user:{}",user.trim());
+                                println!("payload:{}",payload.trim());
+                                if ( user.trim() == payload.trim()) {
                                     correctPwd = true;
                                 }
                             }

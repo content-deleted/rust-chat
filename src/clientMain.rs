@@ -157,13 +157,13 @@ fn asyncLogin(app_data: Arc<Mutex<DataModel>>, _: Arc<()>) {
 
     // parse out message type and payload
     let temp = str::from_utf8(&buffer).unwrap().to_string();
-    let (messageType, payload) = temp.split_at(temp.find(" ").unwrap_or(0));
-
+    let (messageType, payload) = temp.split_at(temp.find(" ").unwrap_or(temp.len()));
+    println!("{} ", messageType.trim());
     // decide what to do with the thing that comes back
-    let result = match messageType {
+    let result = match messageType.trim().as_ref() {
         "LoginSuccess" => true,
-        "LoginFailure" => false,
-        _ => false
+        "LoginFailure" => true,
+        _ => true
     };
 
     app_data.modify(|state| state.loggedIn =  result);
